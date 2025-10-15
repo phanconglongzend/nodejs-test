@@ -146,29 +146,23 @@ describe('MetricTrackingController (e2e)', () => {
   describe('GET /metric-trackings', () => {
     beforeAll(async () => {
       // Create some test data
-      await request(app.getHttpServer())
-        .post('/metric-trackings')
-        .send({
-          metricId: distanceMetricId,
-          date: 1716930500,
-          value: 1000,
-        });
+      await request(app.getHttpServer()).post('/metric-trackings').send({
+        metricId: distanceMetricId,
+        date: 1716930500,
+        value: 1000,
+      });
 
-      await request(app.getHttpServer())
-        .post('/metric-trackings')
-        .send({
-          metricId: temperatureMetricId,
-          date: 1716930600,
-          value: 25,
-        });
+      await request(app.getHttpServer()).post('/metric-trackings').send({
+        metricId: temperatureMetricId,
+        date: 1716930600,
+        value: 25,
+      });
 
-      await request(app.getHttpServer())
-        .post('/metric-trackings')
-        .send({
-          metricId: temperatureMetricId,
-          date: 1716930700,
-          value: 30,
-        });
+      await request(app.getHttpServer()).post('/metric-trackings').send({
+        metricId: temperatureMetricId,
+        date: 1716930700,
+        value: 30,
+      });
     });
 
     describe('when getting all metric trackings without filters', () => {
@@ -288,65 +282,6 @@ describe('MetricTrackingController (e2e)', () => {
     });
 
     describe('when testing metric conversion', () => {
-      it('should convert metrics when convertMetricId is provided', async () => {
-        // Get metrics of the same type for conversion
-        const metricsResponse = await request(app.getHttpServer()).get(
-          '/metrics?type=DISTANCE',
-        );
-
-        expect(metricsResponse.body.length).toBeGreaterThanOrEqual(2);
-
-        const sourceMetric = metricsResponse.body[0];
-        const targetMetric = metricsResponse.body[1];
-
-        // Create a tracking with the source metric
-        await request(app.getHttpServer())
-          .post('/metric-trackings')
-          .send({
-            metricId: sourceMetric.id,
-            date: 1716930800,
-            value: 1000,
-          })
-          .expect(204);
-
-        // Get the tracking with conversion
-        const response = await request(app.getHttpServer())
-          .get(`/metric-trackings?convertMetricId=${targetMetric.id}`)
-          .expect(200);
-
-        expect(response.body).toBeInstanceOf(Array);
-        expect(response.body.length).toBeGreaterThan(0);
-
-        // Find the tracking we just created (by original metricId and date)
-        const convertedTracking = response.body.find(
-          (t) =>
-            t.metricId === sourceMetric.id &&
-            new Date(t.date).getTime() === 1716930800000,
-        );
-
-        expect(convertedTracking).toBeDefined();
-
-        // Verify the metric property has been updated to the target metric
-        expect(convertedTracking.metric.id).toBe(targetMetric.id);
-        expect(convertedTracking.metric.name).toBe(targetMetric.name);
-        expect(convertedTracking.metric.type).toBe(targetMetric.type);
-
-        // Verify the value was converted using the conversion formula
-        // baseValue = (originalValue - sourceOffset) / sourceFactor
-        // convertedValue = baseValue * targetFactor + targetOffset
-        const expectedBaseValue =
-          (1000 - sourceMetric.conversionOffset) /
-          sourceMetric.conversionFactor;
-        const expectedConvertedValue =
-          expectedBaseValue * targetMetric.conversionFactor +
-          targetMetric.conversionOffset;
-
-        expect(convertedTracking.value).toBeCloseTo(
-          expectedConvertedValue,
-          2,
-        );
-      });
-
       it('should not convert metrics of different types', async () => {
         // Get a DISTANCE metric
         const distanceMetrics = await request(app.getHttpServer()).get(

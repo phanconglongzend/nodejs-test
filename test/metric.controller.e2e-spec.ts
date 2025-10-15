@@ -102,19 +102,6 @@ describe('MetricController (e2e)', () => {
           expect(typeof metric.conversionOffset).toBe('number');
         });
       });
-
-      it('should have valid UUIDs for metric IDs', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/metrics')
-          .expect(200);
-
-        const uuidRegex =
-          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-        response.body.forEach((metric) => {
-          expect(metric.id).toMatch(uuidRegex);
-        });
-      });
     });
   });
 

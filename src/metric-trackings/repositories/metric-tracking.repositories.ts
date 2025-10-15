@@ -14,10 +14,13 @@ export class MetricTrackingRepository extends BaseRepository<MetricTrackingEntit
   async getMetricTrackingByFilters(
     dto: GetMetricTrackingByFilterDto,
   ): Promise<MetricTrackingEntity[]> {
-    const query = this.createQueryBuilder('metricTracking').leftJoinAndSelect(
-      'metricTracking.metric',
-      'metric',
-    );
+
+    const query = this.createQueryBuilder('metricTracking')
+      .leftJoinAndSelect('metricTracking.metric', 'metric')
+      .distinctOn(['metric.type', 'DATE(metricTracking.date)'])
+      .orderBy('metric.type')
+      .addOrderBy('DATE(metricTracking.date)')
+      .addOrderBy('metricTracking.createdAt', 'DESC')
 
     if (dto.type) {
       query.andWhere('metric.type = :type', { type: dto.type });
